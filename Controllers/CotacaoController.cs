@@ -21,6 +21,7 @@ namespace WebAPISupermercadoMySql.Controllers
             _configuration = configuration;
         }
 
+        //retorna a lista de produtos de determinada cotação
         [HttpGet("{cotacao}")]
         public JsonResult Get(int cotacao)
         {
@@ -37,7 +38,6 @@ namespace WebAPISupermercadoMySql.Controllers
                 {
                     myReader = myCommand.ExecuteReader();
                     table.Load(myReader);
-
                     myReader.Close();
                     mycon.Close();
                 }
@@ -46,11 +46,12 @@ namespace WebAPISupermercadoMySql.Controllers
             return new JsonResult(table);
         }
 
+        //retorna a lista de cotações
         [HttpGet]
         public JsonResult Get()
         {
             string query = @"
-                        SELECT *FROM `ListasCompra`";
+                        SELECT *FROM `ListasCompras`";
 
             DataTable table = new DataTable();
             string sqlDataSource = _configuration.GetConnectionString("ProdutosConn");
@@ -71,6 +72,7 @@ namespace WebAPISupermercadoMySql.Controllers
             return new JsonResult(table);
         }
 
+        //inseri produto faltante na lista da cotação
         [HttpPost("{cotacao}")]
         public JsonResult Post(Produtos produtos, int cotacao)
         {
@@ -111,7 +113,58 @@ namespace WebAPISupermercadoMySql.Controllers
             return new JsonResult("Adicionado com Sucesso");
         }
 
+        //cria uma nova lista com triggers para fazer contagem do total de itens
+        [HttpPost]
+        public JsonResult Post(Listas listas)
+        {
 
+            string query = @"
+                        START TRANSACTION;" +
+                       "INSERT INTO ListasCompra (DESCRICAO, DATA, STATUS, ITENS, CRIADOR, OBS) VALUES (@DESCRICAO, @DATA, 'ATIVO', '0', @CRIADOR, @OBS);" +
+                       "CREATE TABLE `"+listas.ID+"` (`CODBARRA` BIGINT(14) NOT NULL , `DESCRICAO` VARCHAR(100) NOT NULL , " +
+                       "`CUSTO` DECIMAL(6,4) NOT NULL , `VALOR` DECIMAL(6,2) NOT NULL , `ESTOQUE` DECIMAL(6,4) NOT NULL , " +
+                       "`FORNECEDOR` VARCHAR(50) NOT NULL , `QTDCOMPRA` INT NOT NULL , `VALORCOMPRA` DECIMAL(6,2) NOT NULL , " +
+                       "`BONIFICACAO` VARCHAR(50) NOT NULL , `OBS` VARCHAR(100) NOT NULL ) ENGINE = MyISAM;" +
+                       "COMMIT;" +
+                       "DELIMITER $$" +
+                       "CREATE TRIGGER depoisDELETE_" + listas.ID + "" +
+                       "BEFORE DELETE ON `" + listas.ID + "`" +
+                       "FOR EACH ROW BEGIN" +
+                       "UPDATE `Listas`"+
+                       "SET ITENS = ITENS - 1 WHERE ID = '" + listas.ID + "'; END$$" +
+                       "DELIMITER $"+
+                       "CREATE TRIGGER depoisINSERT_" + listas.ID + "" +
+                       "BEFORE INSERT ON `" + listas.ID + "`" +
+                       "FOR EACH ROW BEGIN"+
+                       "UPDATE `Listas`"+
+                       "SET ITENS = ITENS + 1 WHERE ID = '" + listas.ID + "'; END$;";
+
+            DataTable table = new DataTable();
+            string sqlDataSource = _configuration.GetConnectionString("ProdutosConn");
+            MySqlDataReader myReader;
+            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            {
+                mycon.Open();
+                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
+                {
+                    myCommand.Parameters.AddWithValue("@ID", listas.ID);
+                    myCommand.Parameters.AddWithValue("@DESCRICAO", listas.DESCRICAO);
+                    myCommand.Parameters.AddWithValue("@DATA", listas.DATA);
+                    myCommand.Parameters.AddWithValue("@CRIADOR", listas.CRIADOR);
+                    myCommand.Parameters.AddWithValue("@OBS", listas.OBS);
+
+                    myReader = myCommand.ExecuteReader();
+                    table.Load(myReader);
+
+                    myReader.Close();
+                    mycon.Close();
+                }
+            }
+
+            return new JsonResult("Adicionado com Sucesso");
+        }
+
+        //atualiza os dados com base na compra efetuada
         [HttpPut("{cotacao}")]
         public JsonResult Put(ProdutosCotacao produtos, int cotacao)
         {
@@ -125,7 +178,7 @@ namespace WebAPISupermercadoMySql.Controllers
                         "WHERE CODBARRA=@CODBARRA;";
 
             DataTable table = new DataTable();
-            string sqlDataSource = _configuration.GetConnectionString("EmployeeAppCon");
+            string sqlDataSource = _configuration.GetConnectionString("ProdutosConn");
             MySqlDataReader myReader;
             using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
             {
@@ -151,7 +204,7 @@ namespace WebAPISupermercadoMySql.Controllers
         }
 
 
-
+        //deleta o item selecionado da lista
         [HttpDelete("{cotacao}")]
         public JsonResult Delete(ProdutosCotacao produto, int cotacao)
         {

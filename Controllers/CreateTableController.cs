@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
 using System;
@@ -12,44 +11,18 @@ namespace WebAPISupermercadoMySql.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsuariosController : ControllerBase
+    public class CreateTableController : Controller
     {
         private readonly IConfiguration _configuration;
-        public UsuariosController(IConfiguration configuration)
+        public CreateTableController(IConfiguration configuration)
         {
             _configuration = configuration;
-        }
-
-        [HttpGet]
-        public JsonResult Get()
-        {
-            string query = @"
-                        SELECT *FROM `Usuarios`";
-
-            DataTable table = new DataTable();
-            string sqlDataSource = _configuration.GetConnectionString("ProdutosConn");
-            MySqlDataReader myReader;
-            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
-            {
-                mycon.Open();
-                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
-                {
-                    myReader = myCommand.ExecuteReader();
-                    table.Load(myReader);
-
-                    myReader.Close();
-                    mycon.Close();
-                }
-            }
-            return new JsonResult(table);
-
         }
 
         [HttpGet("{id}")]
         public JsonResult Get(int id)
         {
-            string query = @"
-                           SELECT *FROM Usuarios WHERE ID = '"+id+"'";
+            string query = @"SELECT Usuarios.USUARIO, information_schema.tables.AUTO_INCREMENT FROM Usuarios, information_schema.tables WHERE TABLE_NAME = 'Usuarios' AND ID = '"+id+"'";
 
             DataTable table = new DataTable();
             string sqlDataSource = _configuration.GetConnectionString("ProdutosConn");

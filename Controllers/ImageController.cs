@@ -1,19 +1,39 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using MySql.Data.MySqlClient;
-using System.Data;
-using System.Net;
+﻿using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+using System.IO;
+using System.Net.FtpClient;
 
 namespace WebAPISupermercadoMySql.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ImageController : Controller
+    public class ImageController : ApiController
     {
-        private readonly IConfiguration _configuration;
-        public ImageController(IConfiguration configuration)
+
+        private const string FTP_USERNAME = "bomprec2";
+        private const string FTP_PASSWORD = "@Cgab1546";
+
+        [HttpGet]
+        public IHttpActionResult GetImage(string filename)
         {
-            _configuration = configuration;
+
+            byte[] imageBytes;
+            using (var webClient = new WebClient())
+            {
+                webClient.Credentials = new NetworkCredential(FTP_USERNAME, FTP_PASSWORD);
+                imageBytes = webClient.DownloadData("ftp://bompreco.online/web/IMAGENS/" + filename);
+            }
+
+            // Retornar a imagem como uma resposta HTTP
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+
+            {
+                Content = new ByteArrayContent(imageBytes),
+            };
+
+            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+
+            return ResponseMessage(response);
         }
     }
 }
+
