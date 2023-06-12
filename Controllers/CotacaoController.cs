@@ -63,7 +63,6 @@ namespace WebAPISupermercadoMySql.Controllers
                 {
                     myReader = myCommand.ExecuteReader();
                     table.Load(myReader);
-
                     myReader.Close();
                     mycon.Close();
                 }
