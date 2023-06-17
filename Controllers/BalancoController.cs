@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
 using System;
@@ -11,18 +12,19 @@ namespace WebAPISupermercadoMySql.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CreateTableController : Controller
+    public class BalancoController : ControllerBase
     {
         private readonly IConfiguration _configuration;
-        public CreateTableController(IConfiguration configuration)
+        public BalancoController(IConfiguration configuration)
         {
             _configuration = configuration;
         }
 
-        [HttpGet("{id}/{tabela}")]
-        public JsonResult Get(int id, string tabela)
+        [HttpGet]
+        public JsonResult Get()
         {
-            string query = @"SELECT Usuarios.USUARIO, information_schema.tables.AUTO_INCREMENT FROM Usuarios, information_schema.tables WHERE TABLE_NAME = '"+tabela+"' AND ID = '"+id+"'";
+            string query = @"
+                        SELECT *FROM `Balancos`";
 
             DataTable table = new DataTable();
             string sqlDataSource = _configuration.GetConnectionString("ProdutosConn");
@@ -34,19 +36,12 @@ namespace WebAPISupermercadoMySql.Controllers
                 {
                     myReader = myCommand.ExecuteReader();
                     table.Load(myReader);
-
                     myReader.Close();
                     mycon.Close();
                 }
             }
-            if (table.Rows.Count == 0)
-            {
-                return new JsonResult("Nenhum usuário encontrado");
-            }
-            else
-            {
-                return new JsonResult(table);
-            }
+
+            return new JsonResult(table);
         }
     }
 }

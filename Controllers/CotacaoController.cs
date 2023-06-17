@@ -119,7 +119,7 @@ namespace WebAPISupermercadoMySql.Controllers
 
             string query = @"
                         START TRANSACTION;" +
-                       "INSERT INTO ListasCompra (DESCRICAO, DATA, STATUS, ITENS, CRIADOR, OBS) VALUES (@DESCRICAO, @DATA, 'ATIVO', '0', @CRIADOR, @OBS);" +
+                       "INSERT INTO ListasCompras (DESCRICAO, DATA, STATUS, ITENS, CRIADOR, OBS) VALUES (@DESCRICAO, @DATA, 'ATIVO', '0', @CRIADOR, @OBS);" +
                        "CREATE TABLE `"+listas.ID+"` (`CODBARRA` BIGINT(14) NOT NULL , `DESCRICAO` VARCHAR(100) NOT NULL , " +
                        "`CUSTO` DECIMAL(6,4) NOT NULL , `VALOR` DECIMAL(6,2) NOT NULL , `ESTOQUE` DECIMAL(6,4) NOT NULL , " +
                        "`FORNECEDOR` VARCHAR(50) NOT NULL , `QTDCOMPRA` INT NOT NULL , `VALORCOMPRA` DECIMAL(6,2) NOT NULL , " +
