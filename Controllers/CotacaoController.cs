@@ -113,7 +113,7 @@ namespace WebAPISupermercadoMySql.Controllers
         }
 
         //cria uma nova lista com triggers para fazer contagem do total de itens
-        [HttpPost]
+        [HttpPost()]
         public JsonResult Post(Listas listas)
         {
 
@@ -126,8 +126,8 @@ namespace WebAPISupermercadoMySql.Controllers
                        "`BONIFICACAO` VARCHAR(50) NOT NULL , `OBS` VARCHAR(100) NOT NULL ) ENGINE = MyISAM;" +
                        "COMMIT;" +
                        "DELIMITER $$" +
-                       "CREATE TRIGGER depoisDELETE_" + listas.ID + "" +
-                       "BEFORE DELETE ON `" + listas.ID + "`" +
+                       "CREATE TRIGGER depoisDELETE_" + listas.ID + 
+                       " BEFORE DELETE ON `" + listas.ID + "`" +
                        "FOR EACH ROW BEGIN" +
                        "UPDATE `Listas`"+
                        "SET ITENS = ITENS - 1 WHERE ID = '" + listas.ID + "'; END$$" +
