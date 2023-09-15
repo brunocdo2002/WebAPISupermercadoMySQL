@@ -11,5 +11,9 @@
     <PackageReference Include="System.Net.FtpClient" Version="1.0.5824.34026" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include=".github\workflows\webapisupermercado_mobilegestaoapi.yml" />
+  </ItemGroup>
+
 
 </Project>
